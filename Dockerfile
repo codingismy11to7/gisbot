@@ -12,6 +12,7 @@ COPY package.json package-lock.json tsconfig.json ./
 COPY src/ ./src/
 RUN npm install
 RUN npx tsc
+RUN npm run test
 
 # Remove development dependencies
 RUN npm prune --omit=dev
