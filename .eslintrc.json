@@ -1,0 +1,90 @@
+{
+  "root": true,
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "plugin:import/typescript",
+    "plugin:jest/recommended",
+    "prettier"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "tsConfigRootDir": ".",
+    "project": [
+      "./tsconfig.json"
+    ],
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "import",
+    "jest",
+    "prefer-arrow",
+    "prettier"
+  ],
+  "overrides": [
+    {
+      "files": ["**/?(*.)+(spec|test).ts"],
+      "plugins": ["jest"],
+      "env": {
+        "jest/globals": true
+      },
+      "rules": {
+        "@typescript-eslint/no-unsafe-argument": "off"
+      }
+    }
+  ],
+  "reportUnusedDisableDirectives": true,
+  "rules": {
+    "@typescript-eslint/array-type": ["warn", {"default": "array-simple"}],
+    "@typescript-eslint/no-unnecessary-type-assertion": "warn",
+    "@typescript-eslint/restrict-template-expressions": "off",
+    "@typescript-eslint/no-unused-expressions": "warn",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "args": "all",
+        "argsIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "@typescript-eslint/quotes": [
+      "warn",
+      "double",
+      {
+        "avoidEscape": true
+      }
+    ],
+    "arrow-body-style": "warn",
+    "arrow-parens": ["warn", "as-needed"],
+    "eqeqeq": [
+      "error",
+      "smart"
+    ],
+    "import/no-useless-path-segments": "warn",
+    "import/order": [
+      "warn",
+      {
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        },
+        "groups": [["builtin", "external"], "parent", "sibling", "index"]
+      }
+    ],
+    "no-console": "warn",
+    "no-debugger": "error",
+    "no-throw-literal": "error",
+    "no-var": "error",
+    "object-shorthand": "warn",
+    "prefer-arrow/prefer-arrow-functions": [
+      "error",
+      {
+        "allowStandaloneDeclarations": true
+      }
+    ],
+    "prefer-const": "error",
+    "prettier/prettier": "warn",
+    "quote-props": "off"
+  }
+}
