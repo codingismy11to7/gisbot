@@ -86,8 +86,7 @@ export const ServerLive = Layer.effect(
                   channel: req.body.channel_id,
                   text,
                 });
-                const unknown = resp("¯\\_(ツ)_/¯");
-                const unknownE = Effect.succeed(unknown);
+                const unknown = Effect.succeed(resp("¯\\_(ツ)_/¯"));
 
                 return !config.validTokens.pipe(HashSet.has(req.body.token))
                   ? rep.status(404).send("nope")
@@ -108,7 +107,7 @@ export const ServerLive = Layer.effect(
                           Effect.andThen(({ text, index }) => doSearch(text, index, giser)),
                           Effect.andThen(({ result, elapsed }) =>
                             result === undefined
-                              ? unknownE
+                              ? unknown
                               : resp(
                                   `${result.url
                                     .replace(/%25/g, "%")
@@ -117,11 +116,11 @@ export const ServerLive = Layer.effect(
                                 ),
                           ),
                           Effect.catchTags({
-                            InvalidSearch: () => unknownE,
+                            InvalidSearch: () => unknown,
                             BadStatus: b =>
-                              Effect.logWarning("got a bad status", b.response).pipe(Effect.andThen(unknownE)),
+                              Effect.logWarning("got a bad status", b.response).pipe(Effect.andThen(unknown)),
                             FetchError: f =>
-                              Effect.logError("got a fetch error", f.underlying).pipe(Effect.andThen(unknownE)),
+                              Effect.logError("got a fetch error", f.underlying).pipe(Effect.andThen(unknown)),
                           }),
                         )
                     ).pipe(Effect.runPromise);
