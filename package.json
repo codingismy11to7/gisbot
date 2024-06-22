@@ -1,15 +1,16 @@
 {
-  "name": "poundc-gists",
+  "name": "gisbot",
   "version": "1.0.0",
-  "description": "",
+  "description": "Google image search slackbot",
   "main": "index.js",
+  "homepage": "https://github.com/codingismy11to7/gisbot",
   "scripts": {
     "lint": "eslint src --ext .ts --max-warnings 0",
     "lint:fix": "eslint src --ext .ts --fix",
     "test": "jest"
   },
   "keywords": [],
-  "author": "",
+  "author": "github.com/codingismy11to7",
   "license": "MIT",
   "jest": {
     "preset": "ts-jest",
