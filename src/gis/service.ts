@@ -2,6 +2,12 @@ import { Context, Effect, Layer, pipe } from "effect";
 import { JSDOM } from "jsdom";
 import * as querystring from "node:querystring";
 
+/*
+ * Attribution:
+ * This code was lifted from an npm module that no longer exists called g-i-s
+ * It was located at github.com/harrego/g-i-s and licensed as MIT
+ */
+
 class BadStatus {
   readonly _tag = "BadStatus";
   constructor(readonly response: Response) {}
