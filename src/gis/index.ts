@@ -1,3 +1,3 @@
-import { GISer, GISerLive } from "./service";
+import { GISer, GISerFuncs, GISerLive } from "./service";
 
-export { GISer, GISerLive };
+export { GISer, GISerLive, GISerFuncs };

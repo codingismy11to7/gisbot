@@ -10,10 +10,11 @@ class FetchError {
   constructor(readonly underlying: unknown) {}
 }
 
-export class GISer extends Context.Tag("GISer")<
-  GISer,
-  Readonly<{ gis: (query: string) => Effect.Effect<readonly ImageResult[], BadStatus | FetchError> }>
->() {}
+export type GISerFuncs = Readonly<{
+  gis: (query: string) => Effect.Effect<readonly ImageResult[], BadStatus | FetchError>;
+}>;
+
+export class GISer extends Context.Tag("GISer")<GISer, GISerFuncs>() {}
 
 const BaseUrl = "https://images.google.com/search";
 const UserAgent =

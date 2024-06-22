@@ -1,10 +1,13 @@
-import { Effect, pipe } from "effect";
-import { Config, ConfigLive } from "./config";
+import { Effect, Layer, pipe } from "effect";
+import { ConfigLive } from "./config";
+import { GISerLive } from "./gis";
+import { Server, ServerLive } from "./server";
 
 const program = pipe(
-  Config,
-  Effect.andThen(c => c.getConfig),
-  Effect.andThen(c => Effect.logInfo(c)),
+  Server,
+  Effect.andThen(s => s.start),
 );
 
-void Effect.runPromise(program.pipe(Effect.provide(ConfigLive)));
+const AppLive = ServerLive.pipe(Layer.provide(Layer.merge(ConfigLive, GISerLive)));
+
+void Effect.runPromise(program.pipe(Effect.provide(AppLive)));
