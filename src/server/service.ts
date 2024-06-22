@@ -77,7 +77,7 @@ export const ServerLive = Layer.effect(
                       },
                     ],
                   },
-                  400: {},
+                  404: {},
                 },
               },
               handler: (req, rep) => {
