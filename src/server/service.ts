@@ -100,7 +100,7 @@ export const ServerLive = Layer.effect(
                           ),
                         )
                       : pipe(
-                          getSearchTextAndIndex(req.body.text),
+                          getSearchTextAndIndex(req.body.text.replaceAll("&amp;", "&")),
                           Effect.catchTag("NoSuchElementException", () => Effect.fail(new InvalidSearch())),
                           Effect.tap(parsed => Effect.logInfo(`calling with search text: '${parsed.text}'`)),
                           Effect.tap(stats.pipe(Ref.update(s => ({ ...s, totalSearches: 1 + s.totalSearches })))),
