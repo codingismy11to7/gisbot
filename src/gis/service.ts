@@ -1,5 +1,6 @@
 import { Context, Effect, Layer, pipe } from "effect";
 import { JSDOM } from "jsdom";
+import * as querystring from "node:querystring";
 
 class BadStatus {
   readonly _tag = "BadStatus";
@@ -21,7 +22,7 @@ const UserAgent =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36";
 
 const ImageFileExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg"];
-const FilterDomains = ["gstatic.com"];
+const FilterDomains = ["gstatic.com"].map(domain => ` -site:${domain}`).join(" ");
 
 const ImageURLRegex = /\["(http.+?)",(\d+),(\d+)]/g;
 
@@ -52,7 +53,7 @@ export const GISerLive = Layer.succeed(
   GISer.of({
     gis: query =>
       pipe(
-        `${BaseUrl}?tbm=isch&q=${query}${FilterDomains.map(domain => ` -site:${domain}`).join(" ")}`,
+        `${BaseUrl}?${querystring.encode({ tbm: "isch", q: `${query}${FilterDomains}` })}`,
         url => Effect.tryPromise(() => fetch(url, { method: "GET", headers: { "User-Agent": UserAgent } })),
         Effect.tap(r => (r.status !== 200 ? Effect.fail(new BadStatus(r)) : Effect.void)),
         Effect.andThen(r => r.arrayBuffer()),
