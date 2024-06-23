@@ -61,6 +61,13 @@
       "error",
       "smart"
     ],
+    "import/no-unused-modules": [
+      "warn",
+      {
+        "unusedExports": true,
+        "ignoreExports": ["**/*.test.ts"]
+      }
+    ],
     "import/no-useless-path-segments": "warn",
     "import/order": [
       "warn",
