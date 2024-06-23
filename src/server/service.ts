@@ -33,6 +33,8 @@ const timed = <A, E, R>(e: Effect.Effect<A, E, R>): Effect.Effect<Readonly<{ res
     Effect.andThen(({ result, elapsed }) => ({ result, elapsed })),
   );
 
+const isEmpty = <A>(s: HashSet.HashSet<A>) => pipe(s, HashSet.size, a => a === 0);
+
 export class Server extends Context.Tag("Server")<Server, Readonly<{ start: Effect.Effect<void> }>>() {}
 export const ServerLive = Layer.effect(
   Server,
@@ -87,43 +89,55 @@ export const ServerLive = Layer.effect(
                   text,
                 });
                 const unknown = Effect.succeed(resp("¯\\_(ツ)_/¯"));
+                const handleFailure = (e: Effect.Effect<unknown>) =>
+                  pipe(
+                    stats,
+                    Ref.update(s => ({ ...s, totalFailures: 1 + s.totalFailures })),
+                    Effect.andThen(e),
+                    Effect.andThen(unknown),
+                  );
 
-                return !config.validTokens.pipe(HashSet.has(req.body.token))
-                  ? rep.status(404).send("nope")
-                  : req.body.user_name === "slackbot"
-                  ? "hey let's not make any infinite loops"
-                  : (req.body.text.trim() === "gisstats"
-                      ? pipe(
-                          stats.get,
-                          Effect.andThen(s =>
-                            resp(`total searches: ${s.totalSearches}, total failures: ${s.totalFailures}`),
-                          ),
-                        )
-                      : pipe(
-                          getSearchTextAndIndex(req.body.text.replaceAll("&amp;", "&")),
-                          Effect.catchTag("NoSuchElementException", () => Effect.fail(new InvalidSearch())),
-                          Effect.tap(parsed => Effect.logInfo(`calling with search text: '${parsed.text}'`)),
-                          Effect.tap(stats.pipe(Ref.update(s => ({ ...s, totalSearches: 1 + s.totalSearches })))),
-                          Effect.andThen(({ text, index }) => doSearch(text, index, giser)),
-                          Effect.andThen(({ result, elapsed }) =>
-                            result === undefined
-                              ? unknown
-                              : resp(
-                                  `${result.url
-                                    .replace(/%25/g, "%")
-                                    .replace(/\\u003d/g, "=")
-                                    .replace(/\\u0026/g, "&")} (${Number(elapsed / 1_000_000_000n).toFixed(2)} sec)`,
-                                ),
-                          ),
-                          Effect.catchTags({
-                            InvalidSearch: () => unknown,
-                            BadStatus: b =>
-                              Effect.logWarning("got a bad status", b.response).pipe(Effect.andThen(unknown)),
-                            FetchError: f =>
-                              Effect.logError("got a fetch error", f.underlying).pipe(Effect.andThen(unknown)),
-                          }),
-                        )
-                    ).pipe(Effect.runPromise);
+                return pipe(isEmpty(config.validTokens), empty =>
+                  empty
+                    ? Effect.logError("no tokens configured").pipe(
+                        Effect.andThen(() => rep.status(500).send("server error")),
+                        Effect.runPromise,
+                      )
+                    : !config.validTokens.pipe(HashSet.has(req.body.token))
+                    ? rep.status(404).send("nope")
+                    : req.body.user_name === "slackbot"
+                    ? "hey let's not make any infinite loops"
+                    : (req.body.text.trim() === "gisstats"
+                        ? pipe(
+                            stats.get,
+                            Effect.andThen(s =>
+                              resp(`total searches: ${s.totalSearches}, total failures: ${s.totalFailures}`),
+                            ),
+                          )
+                        : pipe(
+                            getSearchTextAndIndex(req.body.text.replaceAll("&amp;", "&")),
+                            Effect.catchTag("NoSuchElementException", () => Effect.fail(new InvalidSearch())),
+                            Effect.tap(parsed => Effect.logInfo(`calling with search text: '${parsed.text}'`)),
+                            Effect.tap(stats.pipe(Ref.update(s => ({ ...s, totalSearches: 1 + s.totalSearches })))),
+                            Effect.andThen(({ text, index }) => doSearch(text, index, giser)),
+                            Effect.andThen(({ result, elapsed }) =>
+                              result === undefined
+                                ? unknown
+                                : resp(
+                                    `${result.url
+                                      .replace(/%25/g, "%")
+                                      .replace(/\\u003d/g, "=")
+                                      .replace(/\\u0026/g, "&")} (${Number(elapsed / 1_000_000_000n).toFixed(2)} sec)`,
+                                  ),
+                            ),
+                            Effect.catchTags({
+                              InvalidSearch: () => unknown,
+                              BadStatus: b => handleFailure(Effect.logWarning("got a bad status", b.response)),
+                              FetchError: f => handleFailure(Effect.logError("got a fetch error", f.underlying)),
+                            }),
+                          )
+                      ).pipe(Effect.runPromise),
+                );
               },
             })
             .listen({ host: "0.0.0.0", port: config.port }),
