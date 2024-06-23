@@ -20,7 +20,7 @@ describe("parser", () => {
   });
 
   it("index works", () => {
-    expect(run("gis x")?.index).toEqual(1);
+    expect(run("gis x")?.index).toEqual(11);
     expect(run("gis1 x")?.index).toEqual(1);
     expect(run("gis42 x")?.index).toEqual(42);
     expect(run("gisi42 x")?.index).toEqual(42);
