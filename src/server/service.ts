@@ -1,5 +1,5 @@
 import { JsonSchemaToTsProvider } from "@fastify/type-provider-json-schema-to-ts";
-import { Clock, Context, Effect, HashSet, Layer, pipe, Ref } from "effect";
+import { Context, Duration, Effect, HashSet, Layer, pipe, Ref } from "effect";
 import Fastify from "fastify";
 import { Config } from "../config";
 import { GISer, GISerFuncs } from "../gis";
@@ -17,20 +17,11 @@ const BadDomains =
 
 const doSearch = (text: string, index: number, giser: GISerFuncs) =>
   pipe(
-    timed(giser.gis(text)),
-    Effect.andThen(({ result, elapsed }) => ({
+    Effect.timed(giser.gis(text)),
+    Effect.andThen(([elapsed, result]) => ({
       result: result.filter(r => !r.url.match(BadDomains))[index - 1],
       elapsed,
     })),
-  );
-
-const timed = <A, E, R>(e: Effect.Effect<A, E, R>): Effect.Effect<Readonly<{ result: A; elapsed: bigint }>, E, R> =>
-  Effect.Do.pipe(
-    Effect.bind("start", () => Clock.currentTimeNanos),
-    Effect.bind("result", () => e),
-    Effect.bind("end", () => Clock.currentTimeNanos),
-    Effect.let("elapsed", ({ start, end }) => end - start),
-    Effect.andThen(({ result, elapsed }) => ({ result, elapsed })),
   );
 
 const isEmpty = <A>(s: HashSet.HashSet<A>) => pipe(s, HashSet.size, a => a === 0);
@@ -127,7 +118,7 @@ export const ServerLive = Layer.effect(
                                     `${result.url
                                       .replace(/%25/g, "%")
                                       .replace(/\\u003d/g, "=")
-                                      .replace(/\\u0026/g, "&")} (${Number(elapsed / 1_000_000_000n).toFixed(2)} sec)`,
+                                      .replace(/\\u0026/g, "&")} (${elapsed.pipe(Duration.toSeconds).toFixed(2)} sec)`,
                                   ),
                             ),
                             Effect.catchTags({
@@ -146,3 +137,5 @@ export const ServerLive = Layer.effect(
     ),
   ),
 );
+
+export const forTesting = { doSearch };
