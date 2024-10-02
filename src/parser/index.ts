@@ -1,7 +1,7 @@
 import { Match, Option, pipe } from "effect";
 
-type Mod = "g" | "t" | "i" | "a" | "m" | undefined;
-const re = /^gis([gtiam])?(\d+)? (.+)/i;
+type Mod = "g" | "t" | "i" | "a" | "m" | "l" | undefined;
+const re = /^gis([gtiaml])?(\d+)? (.+)/i;
 
 const parseNum = (n: string | undefined) =>
   pipe(
@@ -25,6 +25,7 @@ export const getSearchTextAndIndex = (messageText: string) =>
         Match.when("i", () => " infographic"),
         Match.when("a", () => " animated gif"),
         Match.when("m", () => " meme"),
+        Match.when("l", () => " sexy ladies"),
         Match.exhaustive,
       )}`,
     })),

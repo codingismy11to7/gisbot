@@ -14,6 +14,7 @@ describe("parser", () => {
     ["i", "infographic"],
     ["a", "animated gif"],
     ["m", "meme"],
+    ["l", "sexy ladies"],
     ["", ""],
   ])("'%s' mod is handled", (mod, searchSuff) => {
     expect(run(`gis${mod} a`)?.text).toEqual(`a${!searchSuff.length ? "" : ` ${searchSuff}`}`);
