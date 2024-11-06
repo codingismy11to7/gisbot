@@ -13,7 +13,7 @@ class InvalidSearch {
 }
 
 const BadDomains =
-  /(maps\.google\.com)|(fbsbx.*\.com)|(memegenerator.*\.net)|(gstatic.*\.com)|(instagram.*\.com)|(tiktok.*\.com)/i;
+  /(alamy\.com)|(depositphotos\.com)|(shutterstock\.com)|(maps\.google\.com)|(fbsbx.*\.com)|(memegenerator.*\.net)|(gstatic.*\.com)|(instagram.*\.com)|(tiktok.*\.com)/i;
 
 const doSearch = (text: string, index: number, giser: GISerFuncs) =>
   pipe(
