@@ -3,7 +3,7 @@ import { Context, Duration, Effect, HashSet, Layer, pipe, Ref } from "effect";
 import Fastify from "fastify";
 import { Config } from "../config";
 import { GISer, GISerFuncs } from "../gis";
-import { getSearchTextAndIndex } from "../parser";
+import { getSearchTextAndIndex, Mod } from "../parser";
 
 type Stats = Readonly<{ totalSearches: number; totalFailures: number }>;
 const emptyStats = (): Stats => ({ totalFailures: 0, totalSearches: 0 });
@@ -15,7 +15,7 @@ class InvalidSearch {
 const BadDomains =
   /(alamy\.com)|(depositphotos\.com)|(shutterstock\.com)|(maps\.google\.com)|(fbsbx.*\.com)|(memegenerator.*\.net)|(gstatic.*\.com)|(instagram.*\.com)|(tiktok.*\.com)/i;
 
-const doSearch = (text: string, index: number, mod: "g" | "t" | "i" | "a" | "m" | "l" | undefined, giser: GISerFuncs) =>
+const doSearch = (text: string, index: number, mod: Mod, giser: GISerFuncs) =>
   pipe(
     Effect.timed(giser.gis(text)),
     Effect.andThen(([elapsed, result]) => ({

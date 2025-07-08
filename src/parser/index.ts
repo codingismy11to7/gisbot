@@ -1,6 +1,6 @@
 import { Match, Option, pipe } from "effect";
 
-type Mod = "g" | "t" | "i" | "a" | "m" | "l" | undefined;
+export type Mod = "g" | "t" | "i" | "a" | "m" | "l" | undefined;
 const re = /^gis([gtiaml])?(\d+)? (.+)/i;
 
 const parseNum = (n: string | undefined) =>
