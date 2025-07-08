@@ -1,1 +1,1 @@
-pretty-quick --pattern "**/*.ts" --staged --check --bail
+npx pretty-quick --pattern "**/*.ts" --staged --check --bail
