@@ -5,7 +5,7 @@ const run = (s: string) => getSearchTextAndIndex(s).pipe(Option.getOrUndefined);
 
 describe("parser", () => {
   it("all options work", () => {
-    expect(run("gisa42    xyz  ")).toEqual({ index: 42, text: "xyz animated gif" });
+    expect(run("gisa42    xyz  ")).toEqual({ index: 42, mod: "a", text: "xyz animated gif" });
   });
 
   it.each([

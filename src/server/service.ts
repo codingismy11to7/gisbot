@@ -15,11 +15,13 @@ class InvalidSearch {
 const BadDomains =
   /(alamy\.com)|(depositphotos\.com)|(shutterstock\.com)|(maps\.google\.com)|(fbsbx.*\.com)|(memegenerator.*\.net)|(gstatic.*\.com)|(instagram.*\.com)|(tiktok.*\.com)/i;
 
-const doSearch = (text: string, index: number, giser: GISerFuncs) =>
+const doSearch = (text: string, index: number, mod: "g" | "t" | "i" | "a" | "m" | "l" | undefined, giser: GISerFuncs) =>
   pipe(
     Effect.timed(giser.gis(text)),
     Effect.andThen(([elapsed, result]) => ({
-      result: result.filter(r => !r.url.match(BadDomains))[index - 1],
+      result: result.filter(r => !r.url.match(BadDomains)).filter(r => (mod === "a" ? r.url.endsWith(".gif") : true))[
+        index - 1
+      ],
       elapsed,
     })),
   );
@@ -110,7 +112,7 @@ export const ServerLive = Layer.effect(
                             Effect.catchTag("NoSuchElementException", () => Effect.fail(new InvalidSearch())),
                             Effect.tap(parsed => Effect.logInfo(`calling with search text: '${parsed.text}'`)),
                             Effect.tap(stats.pipe(Ref.update(s => ({ ...s, totalSearches: 1 + s.totalSearches })))),
-                            Effect.andThen(({ text, index }) => doSearch(text, index, giser)),
+                            Effect.andThen(({ text, index, mod }) => doSearch(text, index, mod, giser)),
                             Effect.andThen(({ result, elapsed }) =>
                               result === undefined
                                 ? unknown
