@@ -1,6 +1,6 @@
 import { Match, Option, pipe } from "effect";
 
-type Mod = "g" | "t" | "i" | "a" | "m" | "l" | undefined;
+export type Mod = "g" | "t" | "i" | "a" | "m" | "l" | undefined;
 const re = /^gis([gtiaml])?(\d+)? (.+)/i;
 
 const parseNum = (n: string | undefined) =>
@@ -18,6 +18,7 @@ export const getSearchTextAndIndex = (messageText: string) =>
     Option.filter(x => !!x.search.length),
     Option.andThen(({ mod, idx, search }) => ({
       index: idx ?? 1,
+      mod,
       text: `${search}${Match.value(mod).pipe(
         Match.when(undefined, () => ""),
         Match.when("g", () => " girls"),
