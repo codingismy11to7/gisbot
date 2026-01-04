@@ -1,6 +1,7 @@
 import { Context, Effect, Layer, pipe } from "effect";
 import { JSDOM } from "jsdom";
 import * as querystring from "node:querystring";
+import { Blacklist } from "../blacklist";
 
 /*
  * Attribution:
@@ -8,11 +9,11 @@ import * as querystring from "node:querystring";
  * It was located at github.com/harrego/g-i-s and licensed as MIT
  */
 
-class BadStatus {
+export class BadStatus {
   readonly _tag = "BadStatus";
   constructor(readonly response: Response) {}
 }
-class FetchError {
+export class FetchError {
   readonly _tag = "FetchError";
   constructor(readonly underlying: unknown) {}
 }
@@ -28,7 +29,6 @@ const UserAgent =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36";
 
 const ImageFileExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg"];
-const FilterDomains = ["gstatic.com"].map(domain => ` -site:${domain}`).join(" ");
 
 const ImageURLRegex = /\["(http.+?)",(\d+),(\d+)]/g;
 
@@ -54,18 +54,32 @@ const parseImages = (dom: JSDOM): readonly ImageResult[] => {
   );
 };
 
-export const GISerLive = Layer.succeed(
+export const GISerLive = Layer.effect(
   GISer,
-  GISer.of({
-    gis: query =>
-      pipe(
-        `${BaseUrl}?${querystring.encode({ tbm: "isch", q: `${query}${FilterDomains}` })}`,
-        url => Effect.tryPromise(() => fetch(url, { method: "GET", headers: { "User-Agent": UserAgent } })),
-        Effect.tap(r => (r.status !== 200 ? Effect.fail(new BadStatus(r)) : Effect.void)),
-        Effect.andThen(r => r.arrayBuffer()),
-        Effect.catchTag("UnknownException", u => Effect.fail(new FetchError(u.error))),
-        Effect.andThen(r => new JSDOM(r)),
-        Effect.andThen(parseImages),
-      ),
-  }),
+  Effect.andThen(Blacklist, blacklist =>
+    GISer.of({
+      gis: query =>
+        pipe(
+          blacklist.get,
+          Effect.map(domains =>
+            domains
+              .filter(d => !d.includes("*") && !d.includes("|"))
+              .map(d => d.replace(/\\/g, ""))
+              .map(domain => ` -site:${domain}`)
+              .join(""),
+          ),
+          Effect.andThen(filterDomains =>
+            pipe(
+              `${BaseUrl}?${querystring.encode({ tbm: "isch", q: `${query}${filterDomains}` })}`,
+              url => Effect.tryPromise(() => fetch(url, { method: "GET", headers: { "User-Agent": UserAgent } })),
+              Effect.tap(r => (r.status !== 200 ? Effect.fail(new BadStatus(r)) : Effect.void)),
+              Effect.andThen(r => r.arrayBuffer()),
+              Effect.catchTag("UnknownException", u => Effect.fail(new FetchError(u.error))),
+              Effect.andThen(r => new JSDOM(r)),
+              Effect.andThen(parseImages),
+            ),
+          ),
+        ),
+    }),
+  ),
 );

@@ -6,9 +6,15 @@ const { doSearch } = forTesting;
 describe("server", () => {
   it("doSearch returns proper elapsed time", () =>
     Effect.gen(function* () {
-      const fiber = yield* doSearch("a", 1, undefined, {
-        gis: () => Effect.succeed([{ url: "a", width: 1, height: 1 }]).pipe(Effect.delay("500 millis")),
-      }).pipe(Effect.fork);
+      const fiber = yield* doSearch(
+        "a",
+        1,
+        undefined,
+        {
+          gis: () => Effect.succeed([{ url: "a", width: 1, height: 1 }]).pipe(Effect.delay("500 millis")),
+        },
+        [],
+      ).pipe(Effect.fork);
 
       yield* TestClock.adjust("750 millis");
 
@@ -19,15 +25,40 @@ describe("server", () => {
 
   it("doSearch with 'a' mod filters for gifs", () =>
     Effect.gen(function* () {
-      const res = yield* doSearch("a", 1, "a", {
-        gis: () =>
-          Effect.succeed([
-            { url: "a.jpg", width: 1, height: 1 },
-            { url: "b.gif", width: 1, height: 1 },
-            { url: "c.png", width: 1, height: 1 },
-          ]),
-      });
+      const res = yield* doSearch(
+        "a",
+        1,
+        "a",
+        {
+          gis: () =>
+            Effect.succeed([
+              { url: "a.jpg", width: 1, height: 1 },
+              { url: "b.gif", width: 1, height: 1 },
+              { url: "c.png", width: 1, height: 1 },
+            ]),
+        },
+        [],
+      );
 
       expect(res.result?.url).toEqual("b.gif");
+    }).pipe(Effect.runPromise));
+
+  it("doSearch filters blacklisted domains", () =>
+    Effect.gen(function* () {
+      const res = yield* doSearch(
+        "a",
+        1,
+        undefined,
+        {
+          gis: () =>
+            Effect.succeed([
+              { url: "http://bad.com/image.jpg", width: 1, height: 1 },
+              { url: "http://good.com/image.jpg", width: 1, height: 1 },
+            ]),
+        },
+        ["bad\\.com"],
+      );
+
+      expect(res.result?.url).toEqual("http://good.com/image.jpg");
     }).pipe(Effect.runPromise));
 });
