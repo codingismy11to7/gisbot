@@ -30,4 +30,17 @@ describe("server", () => {
 
       expect(res.result?.url).toEqual("b.gif");
     }).pipe(Effect.runPromise));
+
+  it("doSearch filters out bad domains", () =>
+    Effect.gen(function* () {
+      const res = yield* doSearch("a", 1, undefined, {
+        gis: () =>
+          Effect.succeed([
+            { url: "https://yabbadabbadoo.yarn.co/image.jpg", width: 1, height: 1 },
+            { url: "https://other.com/image.jpg", width: 1, height: 1 },
+          ]),
+      });
+
+      expect(res.result?.url).toEqual("https://other.com/image.jpg");
+    }).pipe(Effect.runPromise));
 });
