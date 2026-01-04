@@ -9,10 +9,12 @@ import { Blacklist } from "../blacklist";
  * It was located at github.com/harrego/g-i-s and licensed as MIT
  */
 
+// eslint-disable-next-line import/no-unused-modules
 export class BadStatus {
   readonly _tag = "BadStatus";
   constructor(readonly response: Response) {}
 }
+// eslint-disable-next-line import/no-unused-modules
 export class FetchError {
   readonly _tag = "FetchError";
   constructor(readonly underlying: unknown) {}
