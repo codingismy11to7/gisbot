@@ -27,13 +27,17 @@ A Slack bot that performs Google Image searches directly within Slack.
 The application requires the following environment variables to be set:
 
 -   `PORT`: The port for the server to listen on (e.g., `3000`).
--   `TOKENS`: A comma-separated list of valid Slack tokens for authenticating requests.
+-   `WEBHOOK_TOKENS`: A comma-separated list of valid Slack tokens for authenticating requests.
+-   `GOOGLE_API_KEY`: Your Google Cloud API Key with Custom Search API enabled.
+-   `GOOGLE_SEARCH_ENGINE_ID`: Your Google Custom Search Engine ID (CX) configured for image search.
 
 You can create a `.env` file in the project root to manage these variables locally:
 
 ```
 PORT=3000
-TOKENS=your-slack-token-1,your-slack-token-2
+WEBHOOK_TOKENS=token1,token2
+GOOGLE_API_KEY=your_api_key
+GOOGLE_SEARCH_ENGINE_ID=your_cx
 ```
 
 ### Building
@@ -99,7 +103,7 @@ This project uses ESLint for code quality.
 This project is built with `effect-ts`, a functional programming library for TypeScript. The core logic is split into several services:
 
 -   `src/parser`: Handles parsing the raw Slack command text.
--   `src/gis`: Manages scraping Google Image Search results.
+-   `src/gis`: Manages fetching images from the Google Custom Search API.
 -   `src/server`: Contains the Fastify web server and handles incoming Slack requests.
 
 When making changes, please ensure all tests pass and the code is properly linted.

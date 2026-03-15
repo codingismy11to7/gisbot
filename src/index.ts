@@ -8,6 +8,6 @@ const program = pipe(
   Effect.andThen(s => s.start),
 );
 
-const AppLive = ServerLive.pipe(Layer.provide(Layer.merge(ConfigLive, GISerLive)));
+const AppLive = ServerLive.pipe(Layer.provide(GISerLive), Layer.provide(ConfigLive));
 
 void Effect.runPromise(program.pipe(Effect.provide(AppLive)));
